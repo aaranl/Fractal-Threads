@@ -8,7 +8,11 @@ int globalArray[SIZE][SIZE] = {{0}};
 
 // Function to compute fractal values for a portion of the image
 void* computeFractal1(void* threadId) {
-    long tid = (long)threadId;
+    int tid = *((int*)threadId);
+    int workArea = tid * 10;
+
+    
+
     // Compute fractal values for the assigned portion of the image
     // This could involve iterating over a portion of the complex plane
     // and calculating the fractal values for each point
@@ -30,7 +34,7 @@ void* computeFractal2(void* threadId) {
 int main() {
     pthread_t threads[NUM_THREADS];
     int rc;
-    int threadArray = {1,2,3,4}; // Thread IDs
+    int threadArray[] = {1,2,3,4}; // Thread IDs
     
     for (int i = 0; i < NUM_THREADS; i++) {
         if (i < 2) {
@@ -45,13 +49,13 @@ int main() {
     }
 
     // Wait for all threads to complete
-    for (t = 0; t < NUM_THREADS; t++) {
-        pthread_join(threads[t], NULL);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
     }
     
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
-            cout << globalArray[i][j]
+            std::cout << globalArray[i][j];
         }
     }
 
