@@ -6,7 +6,7 @@
 const int SIZE = 40;
 int globalArray[SIZE][SIZE] = {{0}};
 
-
+// Function to determine the fractal value at a specific point (x, y)
 int fractalValueAtPoint(int x, int y) {
     // Calculate the distance of the point (x, y) from the center of the image
     int centerX = SIZE / 2;
@@ -24,11 +24,11 @@ int fractalValueAtPoint(int x, int y) {
     }
 }
 
-// Function to compute fractal values for a portion of the image
+// Function to compute fractal values for the top left and top right portions of the image
 void* computeFractal1(void* threadId) {
     int arg = *static_cast<int*>(threadId);
     if (arg == 1) {
-        //top left
+        // Top left quadrant
         for (int i = 0; i < SIZE/2; i++) {
             for (int j = 0; j < SIZE/2; j++) {
                 globalArray[i][j] = fractalValueAtPoint(i, j);
@@ -36,8 +36,8 @@ void* computeFractal1(void* threadId) {
         }
     }
 
-    if (arg = 2) {
-        //top right
+    if (arg == 2) {
+        // Top right quadrant
         for (int i = 0; i < SIZE/2; i++) {
             for (int j = SIZE/2; j < SIZE; j++) {
                 globalArray[i][j] = fractalValueAtPoint(i, j);
@@ -47,26 +47,21 @@ void* computeFractal1(void* threadId) {
     pthread_exit(NULL);
 }
 
+// Function to compute fractal values for the bottom right and bottom left portions of the image
 void* computeFractal2(void* threadId) {
     int arg = *static_cast<int*>(threadId);
-    if (arg == 3)
-    {
-        //bottom right?
-        for (int y = SIZE / 2; y < SIZE; y++)
-        {
-            for (int x = SIZE / 2; x < SIZE; x++)
-            {
+    if (arg == 3) {
+        // Bottom right quadrant
+        for (int y = SIZE / 2; y < SIZE; y++) {
+            for (int x = SIZE / 2; x < SIZE; x++) {
                 globalArray[x][y] = fractalValueAtPoint(x, y);
             }
         }
     }
-    if (arg == 4)
-    {
-        //bottom left
-        for (int y = 0; y < SIZE / 2; y++)
-        {
-            for (int x = SIZE / 2; x < SIZE; x++)
-            {
+    if (arg == 4) {
+        // Bottom left quadrant
+        for (int y = 0; y < SIZE / 2; y++) {
+            for (int x = SIZE / 2; x < SIZE; x++) {
                 globalArray[x][y] = fractalValueAtPoint(x, y);
             }
         }
@@ -74,12 +69,12 @@ void* computeFractal2(void* threadId) {
     pthread_exit(NULL);
 }
 
-
 int main() {
     pthread_t threads[NUM_THREADS];
     int rc;
     int threadArray[] = {1,2,3,4}; // Thread IDs
     
+    // Creating threads to compute fractal values for different portions of the image
     for (int i = 0; i < NUM_THREADS; i++) {
         if (i < 2) {
             rc = pthread_create(&threads[i], NULL, computeFractal1, (void*)&threadArray[i]);
@@ -92,10 +87,12 @@ int main() {
         }
     }
 
+    // Waiting for all threads to finish execution
     for (int t = 0; t < NUM_THREADS; t++) {
         pthread_join(threads[t], NULL);
     }
     
+    // Printing the computed fractal array
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
             std::cout << globalArray[i][j] << " ";
@@ -105,3 +102,4 @@ int main() {
 
     return 0;
 }
+
