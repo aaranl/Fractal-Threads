@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <pthread.h>
 
@@ -6,30 +7,73 @@ const int SIZE = 40;
 int globalArray[SIZE][SIZE] = {{0}};
 
 
+int fractalValueAtPoint(int x, int y) {
+    // Calculate the distance of the point (x, y) from the center of the image
+    int centerX = SIZE / 2;
+    int centerY = SIZE / 2;
+    double distance = std::sqrt(std::pow(x - centerX, 2) + std::pow(y - centerY, 2));
+
+    // Define the radius of the rings
+    double ringRadius = SIZE / 4; // Adjust this value as needed for desired ring thickness
+
+    // Determine whether the point falls within a ring of 0s or 1s using a sine pattern
+    if (std::sin(distance / ringRadius * M_PI) > 0) {
+        return 1; // Inside the ring of 1s
+    } else {
+        return 0; // Outside the ring of 1s (inside the ring of 0s)
+    }
+}
+
 // Function to compute fractal values for a portion of the image
 void* computeFractal1(void* threadId) {
-    int tid = *((int*)threadId);
-    int workArea = tid * 10;
+    int arg = *static_cast<int*>(threadId);
+    if (arg == 1) {
+        //top left
+        for (int i = 0; i < SIZE/2; i++) {
+            for (int j = 0; j < SIZE/2; j++) {
+                globalArray[i][j] = fractalValueAtPoint(i, j);
+            }
+        }
+    }
 
-    
-
-    // Compute fractal values for the assigned portion of the image
-    // This could involve iterating over a portion of the complex plane
-    // and calculating the fractal values for each point
-    // Example: Mandelbrot set computation
-    // ...
+    if (arg = 2) {
+        //top right
+        for (int i = 0; i < SIZE/2; i++) {
+            for (int j = SIZE/2; j < SIZE; j++) {
+                globalArray[i][j] = fractalValueAtPoint(i, j);
+            }
+        }
+    }
     pthread_exit(NULL);
 }
 
 void* computeFractal2(void* threadId) {
-    long tid = (long)threadId;
-    // Compute fractal values for the assigned portion of the image
-    // This could involve iterating over a portion of the complex plane
-    // and calculating the fractal values for each point
-    // Example: Mandelbrot set computation
-    // ...
+    int arg = *static_cast<int*>(threadId);
+    if (arg == 3)
+    {
+        //bottom right?
+        for (int y = SIZE / 2; y < SIZE; y++)
+        {
+            for (int x = SIZE / 2; x < SIZE; x++)
+            {
+                globalArray[x][y] = fractalValueAtPoint(x, y);
+            }
+        }
+    }
+    if (arg == 4)
+    {
+        //bottom left
+        for (int y = 0; y < SIZE / 2; y++)
+        {
+            for (int x = SIZE / 2; x < SIZE; x++)
+            {
+                globalArray[x][y] = fractalValueAtPoint(x, y);
+            }
+        }
+    }
     pthread_exit(NULL);
 }
+
 
 int main() {
     pthread_t threads[NUM_THREADS];
@@ -38,9 +82,9 @@ int main() {
     
     for (int i = 0; i < NUM_THREADS; i++) {
         if (i < 2) {
-            rc = pthread_create(&threads[i], NULL, computeFractal1, (void*)threadArray[i]);
+            rc = pthread_create(&threads[i], NULL, computeFractal1, (void*)&threadArray[i]);
         } else {
-            rc = pthread_create(&threads[i], NULL, computeFractal2, (void*)threadArray[i]);
+            rc = pthread_create(&threads[i], NULL, computeFractal2, (void*)&threadArray[i]);
         }
         if (rc) {
             std::cerr << "Error: Unable to create thread, " << rc << std::endl;
@@ -48,15 +92,15 @@ int main() {
         }
     }
 
-    // Wait for all threads to complete
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
+    for (int t = 0; t < NUM_THREADS; t++) {
+        pthread_join(threads[t], NULL);
     }
     
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
-            std::cout << globalArray[i][j];
+            std::cout << globalArray[i][j] << " ";
         }
+        std::cout << '\n';
     }
 
     return 0;
